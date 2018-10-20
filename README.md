@@ -1,1 +1,2 @@
-# Lab05-Home-Sensor
+# HouseAlarm
+Sample code for lab05
