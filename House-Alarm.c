@@ -29,19 +29,21 @@ int main(int argc, char *argv[])
    pinMode(4,OUTPUT); 		/*Buzzer output*/
    currentState = ALARM_OFF;
    
+while(1){
    currentState = alarm_Off(currentState); /**/
    currentState = alarm_Arming(currentState);/**/
    currentState = alarm_Armed(currentState);/**/
    
-   if(currentState == ALARM_OFF)
+  if(currentState == ALARM_TRIGGERED)
  {
-    currentState = alarm_Off(currentState);
- }
-  else if(currentState == ALARM_TRIGGERED)
- {
-   /* currentState = alarm_Triggered(currentState); */
+   currentState = alarm_Triggered(currentState);
    printf("alarm triggered");
  }
+ if(currentState == ALARM_SOUNDING)
+  {
+	 currentState = alarm_Sounding(currentState);
+  }
+}
  return 0;
 
  }
@@ -50,16 +52,16 @@ int alarm_Off(int currentState)
   {
     if(currentState == ALARM_OFF)
       {
-       printf("The system is off(disabled), Case 1:");
+       printf(" The system is off(disabled), Case 1:\n");
       while(digitalRead(3) == 1) /*While button is not pressed*/
     	{
-	digitalWrite(1, HIGH);	/*Red Led 1 High*/
-	digitalWrite(2, LOW);	/*Blue Led 2 Low*/  
+	digitalWrite(1, HIGH);	/*Blue Led 1 High*/
+	digitalWrite(2, LOW);	/*Red Led 2 Low*/  
 	digitalWrite(4, LOW);	/*Buzzer to low*/
     	}
 	if(digitalRead(3) == 0)/*Press the button*/
 	{
-	   printf("alarm arming");
+	   printf(" alarm arming \n");
 	   return ALARM_ARMING; /*Returning the constant alarm-arming*/
 	}
 	
@@ -72,13 +74,13 @@ int alarm_Arming(int currentState)
     int i;
     if(currentState == ALARM_ARMING)
 	{
-	    printf("Case 2:");
+	    printf(" Case 2: \n");
 	    for(i = 0; i<=10; i++){
 		digitalWrite(1, LOW); delay(500); /*Led 1 to low*/
 		digitalWrite(1, HIGH); delay(500); /*Led 1 to high*/
 		}
-		digitalWrite(1, LOW);	/*Turn led 1 to off*/
-		digitalWrite(2, HIGH);	/*Turn led 2 to on*/
+		digitalWrite(1, LOW);	/*Turn blue led 1 to off*/
+		digitalWrite(2, HIGH);	/*Turn red led 2 to on*/
 	    return ALARM_ARMED;
 	}
 	return 0;
@@ -87,7 +89,7 @@ int alarm_Armed(int currentState)
  {
       if(currentState == ALARM_ARMED)
 	{
-	   printf("alarm armed");
+	   printf(" alarm armed \n");
 	   while(1){/*ALways true*/
 	   digitalWrite(1, LOW);  /*First led turned off*/
 	   digitalWrite(2, HIGH); /*Second led turned on*/
@@ -95,12 +97,12 @@ int alarm_Armed(int currentState)
 
 	   if(digitalRead(3) == 0) /*Button is pressed*/
 		 {
-			printf("Alarm turned off");
+			printf(" Alarm turned off \n");
 			return ALARM_OFF;
 		 }
-		 if(digitalRead(0) == 0) /*Motion detector senses motion*/
+		 if(digitalRead(0) == 1) /*Motion detector senses motion*/
 		  {
-			printf("alarm triggered");
+			printf(" Alarm triggered \n");
 			return ALARM_TRIGGERED; /*returned the constant*/
 		 	 }
 		}
@@ -114,7 +116,7 @@ int alarm_Triggered(int currentState)
 	int i;
 	   if(currentState == ALARM_TRIGGERED)
 		{
-	 	   printf("alarm triggered");
+	 	   printf(" alarm triggered\n");
 		   for(i = 0; i<5 && digitalRead(3) == 1; i++)/*Button is not pressed and waiting for the intruder.*/
 		   {
 			digitalWrite(4, LOW); /*Buzzer to low*/
@@ -139,26 +141,21 @@ int alarm_Triggered(int currentState)
 int alarm_Sounding(int currentState)
  {
 	int i;
-	printf("alarm sounding");
+	printf(" alarm sounding \n");
 	ifttt("https://maker.ifttt.com/trigger/alarm_triggered/with/key/cEsyCCLR4jzCs8_UtE3zy3", "Lab05", "House-Alarm", "detected");
 	if(currentState == ALARM_SOUNDING)
 	{
-           while(1)
+           /*while(1)*/
+	    while(digitalRead(3) == 1)
 	   {
-           digitalWrite(1, HIGH); delay(2000);  /*First led turned off*/
-	   digitalWrite(1, LOW);  delay(2000);
+	   digitalWrite(4, HIGH); /*Buzzer is set to high*/
+           digitalWrite(1, HIGH); /*First led turned off*/
            digitalWrite(2, HIGH); delay(2000); /*Second led turned on*/
-	   digitalWrite(2, LOW); delay(2000);
-           digitalWrite(4, HIGH); /*Buzzer is set to low*/
-	   printf("alarm");
+	    digitalWrite(1, LOW); 
+	   digitalWrite(2, LOW); 
+	   digitalWrite(4, LOW); delay(2000);
+	   printf(" alarm \n");
 	   }
 	}
-	   
-/*Button is pressed*/
-           if(digitalRead(3) == 0)
-                 {
-                        printf("Alarm turned off");
-                        return ALARM_OFF;
-                 }
-	return 0;
+	return ALARM_OFF;
 }
